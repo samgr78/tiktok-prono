@@ -1,0 +1,26 @@
+name: Vidéos du jour
+
+on:
+  schedule:
+    - cron: "17 8 * * *"   # tous les jours vers 9h17 (Paris, heure d'hiver)
+  workflow_dispatch:        # bouton "Run workflow" pour lancer à la main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: pip install -r requirements.txt
+      - run: python main.py
+        env:
+          FOOTBALL_DATA_TOKEN: ${{ secrets.FOOTBALL_DATA_TOKEN }}
+          MAX_VIDEOS: 5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: videos-${{ github.run_id }}
+          path: output/
+          retention-days: 7
